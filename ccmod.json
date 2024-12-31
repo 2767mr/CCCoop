@@ -1,0 +1,6 @@
+{
+    "id": "local-multiplayer",
+    "version": "0.0.2",
+    "poststart": "poststart.js",
+    "prestart": "prestart.js"
+}
