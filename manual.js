@@ -344,7 +344,7 @@ sc.CrossCode.inject({
 })
 
 ig.ENTITY.PlayerTwo = ig.ENTITY.Player.extend({
-    isPlayer: false,
+    isPlayer: true,
     isPlayer2: true,
     init(...args) {
         const original = sc.model;
@@ -360,8 +360,30 @@ ig.ENTITY.PlayerTwo = ig.ENTITY.Player.extend({
             sc.Model.addObserver(sc.model, this);
             this.initModel();
         }
+
+        // const seen = new Set();
+
+        // Object.defineProperty(this, 'isPlayer', {
+        //     configurable: true,
+        //     get() {
+        //         const origin = new Error().stack.split('\n').slice(2, 3).join('\n');
+        //         if (!seen.has(origin)) {
+        //             seen.add(origin);
+        //             console.log(origin);
+        //         }
+        //         return false;
+        //     },
+        //     set() {
+        //         return true;
+        //     }
+        // });
     },
 });
+
+// ig.ENTITY.Combatant.inject({
+//     damage(...args) {
+//     },
+// })
 
 sc.StatusElementModeGui2 = sc.StatusElementModeGui.extend({
     updateDrawables: replacePlayerModel,
@@ -511,6 +533,11 @@ sc.SpHudGui2 = sc.SpHudGui.extend({
     modelChanged: replacePlayerModel,
 });
 
+sc.ExpHudGui2 = sc.ExpHudGui.extend({
+    init: replacePlayerModel,
+    modelChanged: replacePlayerModel,
+});
+
 sc.StatusUpperGui.inject({
     init() {
         this.parent();
@@ -520,7 +547,7 @@ sc.StatusUpperGui.inject({
         b = new sc.SpHudGui2;
         this.addChildGui(b);
         b.setPos(55, 50);
-        b = new sc.ExpHudGui;
+        b = new sc.ExpHudGui2;
         b.setPos(63, 58);
         this.addChildGui(b);
     }

@@ -9,6 +9,10 @@ ig.ENTITY.Player.inject({
         ig.input.currentPlayer = 0;
     }
 });
+
+//Fast enough to keep up with running speed but not fast enough to cause nausea when one player jumps up.
+ig.Camera.SPEED_OPTIONS.EVEN_FASTESTESTER = 0.0075;
+
 ig.ENTITY.PlayerTwo.inject({
     playerNum: 1,
 
@@ -18,7 +22,7 @@ ig.ENTITY.PlayerTwo.inject({
         ig.input.currentPlayer = 2;
         if (!sc.model.isCutscene()) {
             this.cameraHandle = new ig.Camera.TargetHandle(new ig.Camera.MultiEntityTarget([this, ig.game.playerEntity]), 0, 0); 
-        ig.camera.pushTarget(this.cameraHandle, "FASTESTEST", KEY_SPLINES.EASE_IN_OUT)
+        ig.camera.pushTarget(this.cameraHandle, "EVEN_FASTESTESTER", KEY_SPLINES.EASE_IN_OUT)
         }
     }
 });
