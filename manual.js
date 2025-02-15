@@ -18,6 +18,28 @@ function replacePlayerModelIn(cb) {
     }
 }
 
+function replacePlayerEntity(...args) {
+    const original = ig.game.playerEntity;
+    ig.game.playerEntity = ig.game.player2Entity;
+
+    this.parent(...args);
+
+    ig.game.playerEntity = original;
+}
+
+function replacePlayerEntityAndModel(...args) {
+    const originalEntity = ig.game.playerEntity;
+    ig.game.playerEntity = ig.game.player2Entity;
+
+    const originalModel = sc.model.player;
+    sc.model.player = sc.model.player2;
+
+    this.parent(...args);
+
+    sc.model.player = originalModel;
+    ig.game.playerEntity = originalEntity;
+}
+
 const originalGetEntity = ig.Event.getEntity;
 ig.Event.getEntity = function (b, a) {
     if (b && b.playerTwo) {
@@ -170,6 +192,7 @@ sc.BigHpBar.inject({
 sc.GameModel.inject({
     emilieConfig: new sc.PlayerConfig("Emilie"),
     player2: null,
+    _isInMenuForPlayer2: false,
     init() {
         this.parent();
         this.player2 = new sc.PlayerModel();
@@ -179,6 +202,15 @@ sc.GameModel.inject({
         this.player2.setConfig(this.emilieConfig);
         this.player2.reset();
         this.parent();
+    },
+    _setSubState(state) {
+        if (state === sc.GAME_MODEL_SUBSTATE.MENU) {
+            this._isInMenuForPlayer2 = !ig.input.pressed("menu");
+        }
+        return this.parent(state);
+    },
+    isInMenuForPlayer2() {
+        return this._isInMenuForPlayer2;
     }
 });
 
@@ -378,6 +410,7 @@ ig.ENTITY.PlayerTwo = ig.ENTITY.Player.extend({
         //     }
         // });
     },
+    useItem: replacePlayerEntityAndModel,
 });
 
 // ig.ENTITY.Combatant.inject({
@@ -487,7 +520,7 @@ sc.StatusHudGui.inject({
         this.parent();
         var aa = sc.model.player2.currentElementMode;
         this.elementBgGui2.doStateTransition("QUICKMENU");
-        aa = b[aa];
+        aa = statusHudGuiOffsets[aa];
         this.elementModeGui2.doPosTranstition(aa.x + 3, aa.y + 53, 0.2, KEY_SPLINES.EASE);
         this.elementModeGui2.doStateTransition("QUICKMENU");
         this.elementModeGui2.selectBg = true;
@@ -550,5 +583,64 @@ sc.StatusUpperGui.inject({
         b = new sc.ExpHudGui2;
         b.setPos(63, 58);
         this.addChildGui(b);
+    }
+});
+
+sc.Combat.inject({
+    getEnemyTarget(enemy) {
+        const result = this.parent(enemy); // Parent does not take any arguments for some reason, pass it anyway
+        if (result.isPlayer) {
+            // The enemy has not target yet. Do a 50/50 chance to target player2
+            if (!enemy.target) {
+                return Math.random() < 0.5 ? ig.game.playerEntity : ig.game.player2Entity;
+            }
+
+            // The enemy has a target. Only switch about 10% of the time
+            if (Math.random() < 0.1) {
+                return enemy.target.isPlayer2 ? ig.game.playerEntity : ig.game.player2Entity;
+            }
+            return enemy.target;
+        }
+        return result;
+    }
+})
+
+const cachedRingMenuPos = Vec2.createC(0, 0);
+sc.QuickRingMenu.inject({
+    isPlayer2: false,
+    enter() {
+        this.isPlayer2 = !ig.input.pressed("quick");
+        this.parent();
+    },
+    _updatePos() {
+        if (this.isPlayer2) {
+            return replacePlayerEntity.call(this);
+        }
+        return this.parent();
+    }
+});
+
+sc.QuickItemMenu.inject({
+    onPress(item) {
+        if (this.anchor.parentHook.gui.isPlayer2) {
+            return replacePlayerEntity.call(this, item);
+        }
+        
+        this.parent(item);
+    },
+    updateList() {
+        if (this.anchor.parentHook.gui.isPlayer2) {
+            return replacePlayerModel.call(this);
+        }
+        this.parent();
+    }
+});
+
+ig.ACTION_STEP.CONSUME_ITEM.inject({
+    start(entity) {
+        if (entity && entity.isPlayer2) {
+            return replacePlayerModel.call(this, entity);
+        }
+        this.parent(entity);
     }
 });

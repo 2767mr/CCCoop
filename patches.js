@@ -1534,15 +1534,15 @@ sc.CircuitNodeMenu2 = sc.MenuPanel.extend({
     }
 });
 {
-    var b = [];
-    b[sc.CIRCUIT_MENU_DISPLAY_TIME.SHORT] = {
+    var cachedRingMenuPos = [];
+    cachedRingMenuPos[sc.CIRCUIT_MENU_DISPLAY_TIME.SHORT] = {
         hideDelay: 0.05,
         midDelay: 0.05,
         showDuration: 0.1,
         hideDuration: 0.1,
         noInterrupt: true
     };
-    b[sc.CIRCUIT_MENU_DISPLAY_TIME.LONG] = {
+    cachedRingMenuPos[sc.CIRCUIT_MENU_DISPLAY_TIME.LONG] = {
         hideDelay: 0.3,
         midDelay: 0.2,
         showDuration: 0.2,
@@ -1631,7 +1631,7 @@ sc.CircuitNodeMenu2 = sc.MenuPanel.extend({
             });
             this.text.setPos(8, 20 + this.FONT_BOX_OPTIONS[a].offset);
             this.addChildGui(this.text);
-            a = b[sc.options.get("circuit-display-time") || 0];
+            a = cachedRingMenuPos[sc.options.get("circuit-display-time") || 0];
             this.hook.transitions = {
                 DEFAULT: {
                     state: {},
@@ -1659,7 +1659,7 @@ sc.CircuitNodeMenu2 = sc.MenuPanel.extend({
                 a = this.FONT_BOX_OPTIONS[a] ? a : 0;
             this.text.setFont(this.FONT_BOX_OPTIONS[a].font, this.FONT_BOX_OPTIONS[a].padding);
             this.text.setPos(8, 20 + this.FONT_BOX_OPTIONS[a].offset);
-            a = b[sc.options.get("circuit-display-time") || 0];
+            a = cachedRingMenuPos[sc.options.get("circuit-display-time") || 0];
             this.hook.transitions = {
                 DEFAULT: {
                     state: {},
@@ -1828,7 +1828,7 @@ sc.CircuitNodeMenu2 = sc.MenuPanel.extend({
             this.doSizeTransition(true);
         },
         _hideInfo: function () {
-            var a = b[sc.options.get("circuit-display-time") || 0];
+            var a = cachedRingMenuPos[sc.options.get("circuit-display-time") || 0];
             this.hook.hasTransition() && this.hook.currentStateName != "DEFAULT" ? this.doStateTransition("HIDDEN",
                 false, false, function () {
                     this.jumpFromLastSkill = null;
@@ -2109,17 +2109,17 @@ sc.CircuitOverviewMenu2 = ig.GuiElementBase.extend({
         var h = sc.skilltree.getTree(a);
         d.x = c;
         d.y = e;
-        b.x = f;
-        b.y = g;
+        cachedRingMenuPos.x = f;
+        cachedRingMenuPos.y = g;
         for (var i = null, j = 0; j < h.length; j++) {
             i = h[j];
             if (!this.isEmpty(i)) {
                 this._drawLine(d.x, d.y, f, g, i, a);
-                this._preDrawTreeRecursive(a, i, c, e, b.x, b.y);
+                this._preDrawTreeRecursive(a, i, c, e, cachedRingMenuPos.x, cachedRingMenuPos.y);
             }
             this._rotate("CW_90", f, g);
-            f = b.x;
-            g = b.y;
+            f = cachedRingMenuPos.x;
+            g = cachedRingMenuPos.y;
         }
     },
     _preDrawTreeRecursive: function (d, e, f, g, h, i) {
@@ -2127,43 +2127,43 @@ sc.CircuitOverviewMenu2 = ig.GuiElementBase.extend({
         if (e.orBranch) {
             var k = e.orBranch;
             this._rotate(e.direction, h, i);
-            j = Math.abs(b.x) == 1 && Math.abs(b.y) == 1;
-            f = f + ((j ? 4 : 5) + e.distance) * b.x;
-            g = g + ((j ? 2 : 5) + e.distance) * b.y;
-            a.x = b.x;
-            a.y = b.y;
-            this._rotate(k.direction, b.x, b.y);
+            j = Math.abs(cachedRingMenuPos.x) == 1 && Math.abs(cachedRingMenuPos.y) == 1;
+            f = f + ((j ? 4 : 5) + e.distance) * cachedRingMenuPos.x;
+            g = g + ((j ? 2 : 5) + e.distance) * cachedRingMenuPos.y;
+            a.x = cachedRingMenuPos.x;
+            a.y = cachedRingMenuPos.y;
+            this._rotate(k.direction, cachedRingMenuPos.x, cachedRingMenuPos.y);
             if (j)
                 if (a.x <
-                    0 && b.x == 0) {
+                    0 && cachedRingMenuPos.x == 0) {
                     f = f + 2;
-                    g = g + (b.y > 0 ? 2 : -2);
-                } else if (a.x > 0 && b.x == 0) {
+                    g = g + (cachedRingMenuPos.y > 0 ? 2 : -2);
+                } else if (a.x > 0 && cachedRingMenuPos.x == 0) {
                     f = f - 2;
-                    g = g + (b.y > 0 ? 2 : -2);
+                    g = g + (cachedRingMenuPos.y > 0 ? 2 : -2);
                 }
-            (j = Math.abs(b.x) == 1 && Math.abs(b.y) == 1) && ig.error("orBranch can't be rendered with a slope direction.");
-            this._drawOrBranchConnection(f, g, b, d, false, k);
-            f = f + (j ? 3 : 4) * b.x;
-            g = g + (j ? 3 : 4) * b.y;
+            (j = Math.abs(cachedRingMenuPos.x) == 1 && Math.abs(cachedRingMenuPos.y) == 1) && ig.error("orBranch can't be rendered with a slope direction.");
+            this._drawOrBranchConnection(f, g, cachedRingMenuPos, d, false, k);
+            f = f + (j ? 3 : 4) * cachedRingMenuPos.x;
+            g = g + (j ? 3 : 4) * cachedRingMenuPos.y;
             for (h = 0; h < 3; h++) {
                 c.x = 0 + d * 8;
                 c.y = 256 + (sc.model.player2.hasSkill(k.left[h].uid) ? 8 : 0);
-                b.x != 0 ? this.gfx.draw(f - 2, g - 2 + (b.x > 0 ? -3 : 3), c.x, c.y, 5, 5) : this.gfx.draw(f - 2 + (b.y < 0 ? -3 : 3), g - 2, c.x, c.y, 5, 5);
+                cachedRingMenuPos.x != 0 ? this.gfx.draw(f - 2, g - 2 + (cachedRingMenuPos.x > 0 ? -3 : 3), c.x, c.y, 5, 5) : this.gfx.draw(f - 2 + (cachedRingMenuPos.y < 0 ? -3 : 3), g - 2, c.x, c.y, 5, 5);
                 c.y = 256 + (sc.model.player2.hasSkill(k.right[h].uid) ? 8 : 0);
-                b.x !=
-                    0 ? this.gfx.draw(f - 2, g - 2 + (b.x > 0 ? 3 : -3), c.x, c.y, 5, 5) : this.gfx.draw(f - 2 + (b.y < 0 ? 3 : -3), g - 2, c.x, c.y, 5, 5);
-                f = f + (j ? 3 : 5) * b.x;
-                g = g + (j ? 3 : 5) * b.y;
+                cachedRingMenuPos.x !=
+                    0 ? this.gfx.draw(f - 2, g - 2 + (cachedRingMenuPos.x > 0 ? 3 : -3), c.x, c.y, 5, 5) : this.gfx.draw(f - 2 + (cachedRingMenuPos.y < 0 ? 3 : -3), g - 2, c.x, c.y, 5, 5);
+                f = f + (j ? 3 : 5) * cachedRingMenuPos.x;
+                g = g + (j ? 3 : 5) * cachedRingMenuPos.y;
             }
-            this._drawOrBranchConnection(f, g, b, d, true, k, e);
-            f = f - b.x;
-            g = g - b.y;
+            this._drawOrBranchConnection(f, g, cachedRingMenuPos, d, true, k, e);
+            f = f - cachedRingMenuPos.x;
+            g = g - cachedRingMenuPos.y;
         } else {
             this._rotate(e.direction, h, i);
-            j = Math.abs(b.x) == 1 && Math.abs(b.y) == 1;
-            f = f + ((j ? 3 : 5) + e.distance) * b.x;
-            g = g + ((j ? 3 : 5) + e.distance) * b.y;
+            j = Math.abs(cachedRingMenuPos.x) == 1 && Math.abs(cachedRingMenuPos.y) == 1;
+            f = f + ((j ? 3 : 5) + e.distance) * cachedRingMenuPos.x;
+            g = g + ((j ? 3 : 5) + e.distance) * cachedRingMenuPos.y;
             c.x = 0 + d * 8;
             c.y = 256 + (sc.model.player2.hasSkill(e.uid) ? 8 : 0);
             this.gfx.draw(f - Math.floor(2.5), g - Math.floor(2.5), c.x, c.y, 5, 5);
@@ -2171,8 +2171,8 @@ sc.CircuitOverviewMenu2 = ig.GuiElementBase.extend({
         e = e.children;
         if (e.length != 0) {
             j = null;
-            h = b.x;
-            i = b.y;
+            h = cachedRingMenuPos.x;
+            i = cachedRingMenuPos.y;
             for (k = 0; k < e.length; k++) {
                 j =
                     e[k];
@@ -2188,29 +2188,29 @@ sc.CircuitOverviewMenu2 = ig.GuiElementBase.extend({
             var j = false,
                 j = h.orBranch ? sc.model.player2.hasSkill(h.orBranch.left[0].uid) || sc.model.player2.hasSkill(h.orBranch.right[0].uid) ? true : false : sc.model.player2.hasSkill(h.uid) ? true : false;
             this._rotate(h.direction, f, g);
-            f = this._getDrawingDirection(b);
+            f = this._getDrawingDirection(cachedRingMenuPos);
             g = ig.system.context;
             h = h.distance;
             if (f == sc.LINE_DRAW_TYPE.HORZ) {
                 c.x = i * 8;
                 c.y = j ? 276 : 272;
-                this._drawLineStraightLine(b.x >
+                this._drawLineStraightLine(cachedRingMenuPos.x >
                     0 ? a + 3 : a - 2 - (8 - (8 - h)), d, h);
             } else {
                 if (f == sc.LINE_DRAW_TYPE.VERT) {
                     c.x = i * 8;
                     c.y = j ? 276 : 272;
                     g.save();
-                    g.translate((a + (b.y > 0 ? 1 : 0)) * ig.system.scale, (d + (b.y > 0 ? 3 : -2)) * ig.system.scale);
-                    g.rotate(b.y > 0 ? e : -e);
+                    g.translate((a + (cachedRingMenuPos.y > 0 ? 1 : 0)) * ig.system.scale, (d + (cachedRingMenuPos.y > 0 ? 3 : -2)) * ig.system.scale);
+                    g.rotate(cachedRingMenuPos.y > 0 ? e : -e);
                     this._drawLineStraightLine(0, 0, h);
                 } else {
                     c.x = i * 8;
                     c.y = j ? 288 : 280;
                     g.save();
                     g.translate(a * ig.system.scale, d * ig.system.scale);
-                    g.scale(b.x < 0 ? -1 : 1, b.y < 0 ? -1 : 1);
-                    this.gfx.draw(b.x < 0 ? 1 : 2, b.y < 0 ? 1 : 2, c.x, c.y, h, h);
+                    g.scale(cachedRingMenuPos.x < 0 ? -1 : 1, cachedRingMenuPos.y < 0 ? -1 : 1);
+                    this.gfx.draw(cachedRingMenuPos.x < 0 ? 1 : 2, cachedRingMenuPos.y < 0 ? 1 : 2, c.x, c.y, h, h);
                 }
                 g.restore();
             }
@@ -2259,36 +2259,36 @@ sc.CircuitOverviewMenu2 = ig.GuiElementBase.extend({
         c.x != 0 ? this.gfx.draw(a - (c.x < 0 ? 1 : 2), b - 3, d * 8 + (k ? 4 : 0), 296, 4, 7, l, m) : c.y != 0 && this.gfx.draw(a - 3, b - (c.y < 0 ? 1 : 2), 48, 256 + (d * 8 + (k ? 4 : 0)), 7, 4, m, l);
     },
     _rotate: function (a, c, d) {
-        b.x = c;
-        b.y = d;
+        cachedRingMenuPos.x = c;
+        cachedRingMenuPos.y = d;
         switch (sc.SKILLS_DIRECTION[a]) {
             case sc.SKILLS_DIRECTION.CW_45:
-                Vec2.rotate(b, -f);
-                b.x = Math.round(b.x);
-                b.y = Math.round(b.y);
+                Vec2.rotate(cachedRingMenuPos, -f);
+                cachedRingMenuPos.x = Math.round(cachedRingMenuPos.x);
+                cachedRingMenuPos.y = Math.round(cachedRingMenuPos.y);
                 break;
             case sc.SKILLS_DIRECTION.CCW_45:
-                Vec2.rotate(b, f);
-                b.x = Math.round(b.x);
-                b.y = Math.round(b.y);
+                Vec2.rotate(cachedRingMenuPos, f);
+                cachedRingMenuPos.x = Math.round(cachedRingMenuPos.x);
+                cachedRingMenuPos.y = Math.round(cachedRingMenuPos.y);
                 break;
             case sc.SKILLS_DIRECTION.CW_90:
-                Vec2.rotate90CCW(b);
+                Vec2.rotate90CCW(cachedRingMenuPos);
                 break;
             case sc.SKILLS_DIRECTION.CCW_90:
-                Vec2.rotate90CW(b);
+                Vec2.rotate90CW(cachedRingMenuPos);
                 break;
             case sc.SKILLS_DIRECTION.CW_135:
-                Vec2.rotate(b, -g);
-                b.x = Math.round(b.x);
-                b.y = Math.round(b.y);
+                Vec2.rotate(cachedRingMenuPos, -g);
+                cachedRingMenuPos.x = Math.round(cachedRingMenuPos.x);
+                cachedRingMenuPos.y = Math.round(cachedRingMenuPos.y);
                 break;
             case sc.SKILLS_DIRECTION.CCW_135:
-                Vec2.rotate(b, g);
-                b.x = Math.round(b.x);
-                b.y = Math.round(b.y);
+                Vec2.rotate(cachedRingMenuPos, g);
+                cachedRingMenuPos.x = Math.round(cachedRingMenuPos.x);
+                cachedRingMenuPos.y = Math.round(cachedRingMenuPos.y);
         }
-        return b;
+        return cachedRingMenuPos;
     },
     _getDrawingDirection: function (a) {
         if (a.x == 0 && a.y == 0) {
@@ -3473,9 +3473,9 @@ sc.CircuitOverviewMenu2.FocusOverlay = ig.FocusGui.extend({
                 this.orBranchIndex = m;
                 this.orLevels = o;
                 this.orLeft = n == void 0 ? true : n;
-                this.blockID = b(this.skill.uid, this.orLevels[this.orBranchIndex], this.element);
+                this.blockID = cachedRingMenuPos(this.skill.uid, this.orLevels[this.orBranchIndex], this.element);
             } else
-                this.blockID = b(this.skill.uid, this.skill.level, this.element);
+                this.blockID = cachedRingMenuPos(this.skill.uid, this.skill.level, this.element);
             if (this.blockID > 0)
                 this.blocked = true;
             (this._buttonGroup = i) && i.addFocusGui(this, f.uid - j || 0, 0);
@@ -3982,7 +3982,7 @@ sc.CircuitSwapBranches2.Button = ig.FocusGui.extend({
         this.setPos(a, d);
         this.startUID = f || -1;
         this.element = g || 0;
-        this.submitSound = b;
+        this.submitSound = cachedRingMenuPos;
         this.blockedSound = sc.BUTTON_SOUND.denied;
     },
     updateDrawables: function () {
@@ -5942,7 +5942,7 @@ sc.ItemConsumption.inject({
             return this.dashTimer > 0.33 ? f : a.guarding || sc.control.guarding() && Vec2.isZero(b.moveDir) ? this.model.getCore(sc.PLAYER_CORE.GUARD) ? e : d : sc.control.dashHold() ? f : this.state == 1 || (this.state == 2 || this.state == 5) && this.model.getCore(sc.PLAYER_CORE.THROWING) && sc.control.aiming() ? c : d;
         },
         getCurrentChargeLevel: function () {
-            return this.charging.time <= 0 ? 0 : b(this.charging);
+            return this.charging.time <= 0 ? 0 : cachedRingMenuPos(this.charging);
         },
         getMaxChargeLevel: function (a) {
             var b = 0,
@@ -6296,7 +6296,7 @@ sc.ItemConsumption.inject({
                         this.gui.crosshair.active ? this.gui.crosshair.getDir(this.face) : Vec2.isZero(c.moveDir) || Vec2.assign(this.face, c.moveDir);
                     }
                     Vec2.isZero(c.moveDir) || Vec2.assign(this.charging.prefDir, c.moveDir);
-                    d = b(this.charging);
+                    d = cachedRingMenuPos(this.charging);
                     ig.game.firstUpdateLoop && sc.stats.addMap("combat", "charging", ig.system.rawTick);
                     if (!sc.autoControl.isActive() ||
                         !ig.slowMotion.hasSlowMotion("tutorialMsg"))
@@ -6305,14 +6305,14 @@ sc.ItemConsumption.inject({
                         this.charging.cancelTime = this.charging.cancelTime + ig.system.actualTick;
                     if (this.charging.maxLevel < 3)
                         this.charging.time = Math.min(this.charging.time, h[this.charging.maxLevel] - 0.05);
-                    var e = b(this.charging);
+                    var e = cachedRingMenuPos(this.charging);
                     if (d >= 1 && e != d) {
                         this.charging.cancelTime = 0;
                         this.showChargeEffect(e);
                     }
                 }
                 if ((this.charging.cancelTime > 1 || !c.charge) && this.charging.time >= h[0]) {
-                    a.applyCharge = b(this.charging);
+                    a.applyCharge = cachedRingMenuPos(this.charging);
                     a.isCharging = false;
                     this.clearCharge();
                     if (this.charging.cancelTime > 1)
@@ -6765,7 +6765,7 @@ ig.ENTITY.WaveTeleport.inject({
         d.eventAction = true;
         for (a = this.teleportTargets.length; a--;) {
             var f = this.teleportTargets[a],
-                g = f.getCenter(b);
+                g = f.getCenter(cachedRingMenuPos);
             this.effects.sheet.spawnFixed("trail", g.x, g.y, f.coll.pos.z + 12, null, {
                 target2: this,
                 target2Align: ig.ENTITY_ALIGN.CENTER
@@ -6796,7 +6796,7 @@ ig.ENTITY.WaveTeleport.inject({
         }
         ]), f = this.teleportTargets.length, g = 0; g < f; ++g) {
             var h = this.teleportTargets[g],
-                i = this.getCenter(b);
+                i = this.getCenter(cachedRingMenuPos);
             h.sendEnemyEvent && h.sendEnemyEvent(sc.COMBAT_ENEMY_EVENT.WAVE_TELEPORT, {
                 newPos: i
             });
